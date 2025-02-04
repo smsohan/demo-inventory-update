@@ -13,7 +13,7 @@ const storage = new Storage();
 
 const csv = require('csv-parser');
 
-const insertProducts = async (products) => {
+const upsertProducts = async (products) => {
     const instance = spanner.instance(instanceId);
     const database = instance.database(databaseId);
     const productsTable = database.table("Products")
@@ -43,7 +43,7 @@ const processCSVData = async (inventoryCSV) => {
             products.push({ Id, Name, Quantity })
         }).on('end', async () => {
             console.log('finished reading data');
-            await insertProducts(products);
+            await upsertProducts(products);
             console.log('finished inserting data');
         })
         .on('error', (error) => {
