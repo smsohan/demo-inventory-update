@@ -1,0 +1,21 @@
+
+version: "3.9"
+
+services:
+  app:
+    build: .
+    depends_on:
+      - spanner
+    ports:
+      - 8080:8080
+    environment:
+      - DB_INSTANCE=test-instance
+      - DB_NAME=inventory
+      - PROJECT_ID=sohansm-project
+      - SPANNER_EMULATOR_HOST=spanner:9010
+
+  spanner:
+    image: gcr.io/cloud-spanner-emulator/emulator
+    ports:
+      - 9010:9010
+      - 9020:9020
