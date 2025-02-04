@@ -6,10 +6,10 @@ INSTANCE=test-instance
 PROJECT_ID=sohansm-project
 DATABASE=inventory
 
-# gcloud config configurations create emulator
-# gcloud config set auth/disable_credentials true
-# gcloud config set project sohansm-project
-# gcloud config set api_endpoint_overrides/spanner http://localhost:9020/
+gcloud config configurations create emulator
+gcloud config set auth/disable_credentials true
+gcloud config set project $PROJECT_ID
+gcloud config set api_endpoint_overrides/spanner http://localhost:9020/
 gcloud spanner instances create $INSTANCE\
   --config=emulator-config --description="Test Instance" --nodes=1
 gcloud spanner databases create $DATABASE \
