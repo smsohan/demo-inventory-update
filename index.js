@@ -2,8 +2,15 @@ const http = require('http');
 const { Spanner } = require('@google-cloud/spanner');
 const { Storage } = require('@google-cloud/storage');
 const { Readable } = require('stream');
+const client = require('prom-client');
 const fs = require('fs')
 
+const register = new client.Registry();
+const rowsUpsertedCounter = new client.Counter({
+  name: 'rows_upserted',
+  help: 'Total rows upserted'
+});
+register.registerMetric(rowsUpsertedCounter);
 
 const spanner = new Spanner({ projectId: process.env.PROJECT_ID });
 const instanceId = process.env.DB_INSTANCE;
@@ -21,6 +28,7 @@ const upsertProducts = async (products) => {
     try {
         await productsTable.upsert(products)
         console.log('Data inserted successfully.');
+        rowsUpsertedCounter.inc(products.lenth)
     } catch (err) {
         console.error('ERROR inserting data:', err);
     } finally {
@@ -86,6 +94,14 @@ const processDirect = async (req, res) => {
 }
 
 const server = http.createServer(async (req, res) => {
+    // This is for the otel collector
+    if (req.url === '/metrics'){
+        res.appendHeader('Content-Type', register.contentType)
+        res.statusCode = 200
+        res.end(await register.metrics());
+        return
+    }
+
     if (req.method == 'POST') {
         if (req.url === '/direct') {
             await processDirect(req, res)

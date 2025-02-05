@@ -77,6 +77,11 @@ resource "google_project_iam_member" "storage_reader" {
   member  = "serviceAccount:${google_service_account.default.email}"
 }
 
+resource "google_project_iam_member" "metric_writer" {
+  project    = var.project_id
+  role    = "roles/monitoring.metricWriter"
+  member  = "serviceAccount:${google_service_account.default.email}"
+}
 # --- Spanner Instance and Database ---
 
 resource "google_spanner_instance" "default" {
@@ -101,6 +106,7 @@ resource "google_spanner_database" "default" {
     ) PRIMARY KEY(Id)
     EOT
   ]
+  deletion_protection=false
 }
 
 # --- Cloud Run Service ---
@@ -111,6 +117,7 @@ resource "google_cloud_run_v2_service" "default" {
 
   template {
     containers {
+      name = "app"
       image = var.cloud_run_image_name
       # Add environment variables if needed for your application.
        env {
@@ -127,13 +134,20 @@ resource "google_cloud_run_v2_service" "default" {
        }
 
     }
-     service_account = google_service_account.default.email
+
+    containers {
+        name = "collector"
+        depends_on = [ "app" ]
+        image = "us-docker.pkg.dev/cloud-ops-agents-artifacts/cloud-run-gmp-sidecar/cloud-run-gmp-sidecar:1.2.0"
+    }
+    service_account = google_service_account.default.email
   }
 
    traffic {
     type = "TRAFFIC_TARGET_ALLOCATION_TYPE_LATEST" # Always use latest revision
     percent = 100
   }
+  deletion_protection=false
 }
 
 # # Allow unauthenticated invocations (for the trigger) - IMPORTANT: Consider security implications!
