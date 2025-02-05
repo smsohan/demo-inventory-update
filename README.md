@@ -34,27 +34,26 @@ $ sh createdb.sh
 
 ## Deploy to GCP
 
-You need to create a `spanner` instance. Then you can run the same `createdb.sh` script to create the
-test database, but use the `default` configuration to target real spanner instead of the emulator
-and update the variables accordingly. You'll also need to give Spanner Database User role to the Cloud Run
-app's service account. Once your Spanner database is created, you can deploy the Cloud Run app.
-Update the variables in [deploy.sh](./deploy.sh) and run the following:
+Make sure you have Terraform installed. Then run the following:
 
 ```bash
-$ sh deploy.sh
+$ cd terraform
+$ cp dev.tfvars.example dev.tfvars
 ```
-Then setup GCS trigger for this service for a specific BUCKET and run the following to trigger the service:
+
+Then edit the dev.tfvars file and update the values. Then run the following:
 
 ```bash
-$ gsutil cp inventory.csv gs://<BUCKET>/
+$ terraform init
+$ terraform apply --var-file="dev.tfvars"
 ```
 
-If you check the logs for the Cloud Run service, you can see that the data was successfully procssed. Also, you can
-use the Spanner UI on GCP console or the following command to see the updated data:
+Once it suceeds you'll see a few output, note the GCS bucket url, since it has a suffix to make it globally unique.
+Then, you can trigger the app using the following:
 
 ```bash
-$ gcloud config configurations activate default
-$ gcloud spanner databases execute-sql <DB_NAME> --sql "select * from products" --instance=<DB_INSTANCE>
+$ cd .. # go from the terraform dir to the parent
+$ gsutil cp inventory.csv "gs://<bucket-url>"
 ```
-Try changing the file a few times, the app should `upsert` the database to insert new rows and update existing rows.
 
+If everything worked, this should now upsert the data in your Spanner table. You can verify on the Console.

@@ -1,0 +1,8 @@
+project_id = ""
+region = "us-central1"
+bucket_name = "inventory_bucket"
+service_account_name = "inventory-update-sa"
+spanner_instance_name = "inventory-instance"
+spanner_database_name = "inventory"
+cloud_run_service_name = "inventory-update-app"
+cloud_run_image_name = "us-central1-docker.pkg.dev/..."

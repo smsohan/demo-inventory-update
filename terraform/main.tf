@@ -33,6 +33,10 @@ resource "google_project_service" "pubsub" {
 
 # --- Cloud Storage Bucket ---
 
+resource "random_id" "bucket_name_suffix" {
+  byte_length = 4
+}
+
 resource "google_storage_bucket" "default" {
   name                        = "${var.bucket_name}-${random_id.bucket_name_suffix.hex}"
   location                    = var.region
