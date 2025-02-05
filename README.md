@@ -34,14 +34,29 @@ $ sh createdb.sh
 
 ## Deploy to GCP
 
-Make sure you have Terraform installed. Then run the following:
+Build and push the docker image for the NodeJS app, and note the full URL including the SHA tag of the image at the end.
+You'll need this at the next step.
 
+```bash
+# Create a docker repo
+$ gcloud artifacts repositories create REPO_NAME \
+--repository-format=docker \
+--location=REGION --description="DESCRIPTION"
+
+# Build and push the docker image for the app
+$ gcloud builds submit --pack image=REGION-docker.pkg.dev/PROJECT_ID/REPO_NAME/IMAGE_NAME
+```
+
+Make sure you have Terraform installed. Then run the following:
 ```bash
 $ cd terraform
 $ cp dev.tfvars.example dev.tfvars
 ```
 
-Then edit the dev.tfvars file and update the values. Then run the following:
+Then edit the dev.tfvars file and update the values. Use the full URL of the image. For example:
+`us-central1-docker.pkg.dev/sohansm-project/cloud-run-source-deploy/inventory-app@sha256:sha256:2109d6c15d7f4a9fd2958d9e290a0201316e08d536e11cfaad131a3c456a2333`
+
+Then run the following:
 
 ```bash
 $ terraform init
